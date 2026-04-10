@@ -1,0 +1,627 @@
+/* ============================================
+   NEXUS TETRIS — App Styles
+   ============================================ */
+
+/* ============ Layout ============ */
+.game-container {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 24px;
+  padding: 20px;
+  animation: slide-in-up 0.6s ease-out;
+}
+
+.game-title {
+  font-family: var(--font-display);
+  font-size: 2.4rem;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: title-glow 3s ease-in-out infinite;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+}
+
+.game-subtitle {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  text-align: center;
+  color: var(--text-secondary);
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-top: -14px;
+  margin-bottom: 20px;
+}
+
+/* ============ Side Panels ============ */
+.side-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 150px;
+}
+
+.side-panel.left {
+  animation: slide-in-left 0.5s ease-out;
+}
+
+.side-panel.right {
+  animation: slide-in-right 0.5s ease-out;
+}
+
+.panel-card {
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  transition: border-color var(--transition-normal);
+}
+
+.panel-card:hover {
+  border-color: var(--border-glow);
+}
+
+.panel-label {
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.panel-value {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--neon-cyan);
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+}
+
+.panel-value.score {
+  font-size: 1.8rem;
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-green));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ============ Preview Piece ============ */
+.preview-grid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.preview-row {
+  display: flex;
+  gap: 2px;
+}
+
+.preview-cell {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  transition: background var(--transition-fast);
+}
+
+.preview-cell.filled {
+  box-shadow: inset 0 0 4px rgba(255,255,255,0.2), 0 0 6px var(--cell-glow, transparent);
+}
+
+.preview-cell.empty {
+  background: transparent;
+}
+
+/* ============ Game Board ============ */
+.board-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.board-container {
+  position: relative;
+  border: 2px solid var(--border-glow);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: rgba(5, 5, 20, 0.8);
+  box-shadow:
+    0 0 30px rgba(0, 240, 255, 0.08),
+    inset 0 0 60px rgba(0, 0, 0, 0.5);
+  /* Responsive: never wider than the viewport */
+  width: min(320px, calc(100vw - 32px));
+  aspect-ratio: 1 / 2;
+}
+
+.board-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 31px,
+      rgba(255, 255, 255, 0.015) 31px,
+      rgba(255, 255, 255, 0.015) 32px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 31px,
+      rgba(255, 255, 255, 0.015) 31px,
+      rgba(255, 255, 255, 0.015) 32px
+    );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.board-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.board-shake {
+  animation: shake 0.2s ease-in-out;
+}
+
+/* ============ Overlays ============ */
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(5, 5, 20, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: var(--radius-md);
+  z-index: 10;
+  animation: slide-in-up 0.3s ease-out;
+}
+
+.overlay-title {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 4px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.overlay-title.gameover {
+  background: linear-gradient(135deg, var(--neon-pink), var(--neon-orange));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.overlay-title.paused {
+  color: var(--neon-yellow);
+  text-shadow: 0 0 20px rgba(255, 225, 77, 0.4);
+}
+
+.overlay-score {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+  letter-spacing: 2px;
+}
+
+/* ============ Buttons ============ */
+.btn {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  padding: 14px 32px;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.btn:hover::after {
+  opacity: 1;
+}
+
+.btn:active {
+  transform: scale(0.96);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-blue));
+  color: #000;
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 0 30px rgba(0, 240, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: var(--bg-glass);
+  color: var(--text-primary);
+  border: 1px solid var(--border-glass);
+}
+
+.btn-secondary:hover {
+  border-color: var(--border-glow);
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.15);
+}
+
+/* ============ Controls Info ============ */
+.controls-card {
+  margin-top: 4px;
+}
+
+.controls-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  align-items: center;
+}
+
+.control-key {
+  font-family: var(--font-display);
+  font-size: 0.55rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 3px 8px;
+  text-align: center;
+  color: var(--neon-cyan);
+  white-space: nowrap;
+}
+
+.control-desc {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+/* ============ Start Screen ============ */
+.start-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  animation: slide-in-up 0.8s ease-out;
+  text-align: center;
+}
+
+.start-screen .game-title {
+  font-size: 3.5rem;
+  margin-bottom: 8px;
+}
+
+.start-screen .game-subtitle {
+  margin-bottom: 40px;
+  font-size: 0.85rem;
+}
+
+.start-features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 40px;
+  max-width: 520px;
+}
+
+.feature-card {
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: 20px 16px;
+  text-align: center;
+  transition: all var(--transition-normal);
+}
+
+.feature-card:hover {
+  border-color: var(--border-glow);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0, 240, 255, 0.1);
+}
+
+.feature-icon {
+  font-size: 1.8rem;
+  margin-bottom: 8px;
+}
+
+.feature-name {
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+.feature-desc {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* ============ Line Clear Particles ============ */
+.particles-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  animation: particle-rise 0.8s ease-out forwards;
+}
+
+/* ============ Hold Inactive ============ */
+.hold-inactive {
+  opacity: 0.4;
+}
+
+/* ============ High Score ============ */
+.high-score-label {
+  font-size: 0.6rem;
+  color: var(--text-secondary);
+  letter-spacing: 1px;
+  margin-top: 4px;
+}
+
+.high-score-value {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  color: var(--neon-yellow);
+}
+
+/* ============ Mobile Controls ============ */
+.mobile-controls {
+  display: none;
+  gap: 8px;
+  justify-content: center;
+  padding: 16px;
+  flex-wrap: wrap;
+}
+
+.mobile-btn {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  width: 56px;
+  height: 56px;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  background: var(--bg-glass);
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.mobile-btn:active {
+  background: rgba(0, 240, 255, 0.15);
+  border-color: var(--neon-cyan);
+  transform: scale(0.92);
+}
+
+.mobile-btn.wide {
+  width: 120px;
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+}
+
+@media (max-width: 768px) {
+  /* ── Root fills the screen ── */
+  body {
+    overflow: hidden;
+    height: 100dvh;
+  }
+
+  #root {
+    height: 100dvh;
+    min-height: unset;
+    justify-content: flex-start;
+    overflow: hidden;
+  }
+
+  /* ── Game screen as full-height flex column ── */
+  .game-screen {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    width: 100%;
+    overflow: hidden;
+    padding: 6px 6px 0;
+    box-sizing: border-box;
+  }
+
+  .game-screen > .game-title {
+    font-size: 1rem !important;
+    margin-bottom: 4px !important;
+    flex-shrink: 0;
+    letter-spacing: 4px;
+  }
+
+  /* ── Game container fills remaining height, horizontal layout ── */
+  .game-container {
+    flex: 1;
+    min-height: 0;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: stretch;
+    gap: 6px;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  /* ── Side panels: vertical thin columns ── */
+  .side-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    width: 68px !important;
+    min-width: 68px !important;
+    max-width: 68px !important;
+    gap: 5px;
+    overflow: hidden;
+    justify-content: flex-start !important;
+  }
+
+  .panel-card {
+    padding: 6px 7px !important;
+    flex-shrink: 0;
+  }
+
+  .panel-label {
+    font-size: 0.45rem !important;
+    margin-bottom: 4px;
+  }
+
+  .panel-value {
+    font-size: 0.85rem !important;
+  }
+
+  .panel-value.score {
+    font-size: 0.75rem !important;
+  }
+
+  .high-score-label,
+  .high-score-value {
+    font-size: 0.55rem !important;
+  }
+
+  .preview-cell {
+    width: 11px !important;
+    height: 11px !important;
+  }
+
+  .controls-card {
+    display: none !important;
+  }
+
+  .level-progress {
+    margin-top: 4px;
+  }
+
+  /* ── Board wrapper fills all available space ── */
+  .board-wrapper {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  /* ── Board scales to fit height, maintains 1:2 ratio ── */
+  .board-container {
+    /* Use remaining height for board, then derive width from aspect ratio */
+    height: 100%;
+    width: auto !important;
+    aspect-ratio: 1 / 2;
+    max-width: 100%;
+    /* Prevent overflow if somehow too wide */
+    max-height: 100%;
+  }
+
+  .board-canvas {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* ── Mobile controls bar at bottom ── */
+  .mobile-controls {
+    display: flex !important;
+    flex-shrink: 0;
+    gap: 5px;
+    justify-content: center;
+    padding: 6px 4px;
+    flex-wrap: nowrap;
+  }
+
+  .mobile-btn {
+    width: 46px !important;
+    height: 46px !important;
+    font-size: 1rem !important;
+    flex-shrink: 0;
+  }
+
+  .mobile-btn.wide {
+    width: 70px !important;
+    font-size: 0.55rem !important;
+    letter-spacing: 1px;
+  }
+
+  /* ── Start screen stays scrollable (ok on start) ── */
+  .start-screen {
+    min-height: 100dvh;
+    overflow-y: auto;
+  }
+
+  .start-screen .game-title {
+    font-size: 2rem;
+  }
+
+  .start-features {
+    grid-template-columns: 1fr;
+    max-width: 280px;
+  }
+}
+
+/* ============ Level Bar ============ */
+.level-progress {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.level-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple));
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
