@@ -12,6 +12,10 @@ import {
 } from './constants';
 import { useTetris } from './useTetris';
 
+// DAS / ARR timings (ms) — chuẩn Tetris
+const DAS_DELAY = 120;   // delay trước khi auto-repeat bắt đầu
+const ARR_INTERVAL = 50; // tốc độ repeat sau đó
+
 // ============ Helper: Render piece preview ============
 function PiecePreview({ type, inactive }: { type: string | null; inactive?: boolean }) {
   if (!type) {
@@ -43,10 +47,10 @@ function PiecePreview({ type, inactive }: { type: string | null; inactive?: bool
               style={
                 cell
                   ? {
-                      background: color,
-                      '--cell-glow': glow,
-                      boxShadow: `inset 0 0 4px rgba(255,255,255,0.25), 0 0 8px ${glow}`,
-                    } as React.CSSProperties
+                    background: color,
+                    '--cell-glow': glow,
+                    boxShadow: `inset 0 0 4px rgba(255,255,255,0.25), 0 0 8px ${glow}`,
+                  } as React.CSSProperties
                   : undefined
               }
             />
@@ -66,6 +70,8 @@ function App() {
   const [particles, setParticles] = useState<
     { id: number; x: number; y: number; color: string; drift: number }[]
   >([]);
+  const dasTimerRef = useRef<number | null>(null);
+  const arrTimerRef = useRef<number | null>(null);
   const [highScore, setHighScore] = useState(() => {
     try {
       return parseInt(localStorage.getItem('nexus-tetris-highscore') || '0', 10);
@@ -229,9 +235,38 @@ function App() {
     }
   }, [state.lineClearEvent]);
 
+  // ============ DAS / ARR ============
+  const clearDASARR = useCallback(() => {
+    if (dasTimerRef.current !== null) {
+      clearTimeout(dasTimerRef.current);
+      dasTimerRef.current = null;
+    }
+    if (arrTimerRef.current !== null) {
+      clearInterval(arrTimerRef.current);
+      arrTimerRef.current = null;
+    }
+  }, []);
+
+  const startDASARR = useCallback(
+    (action: () => void) => {
+      clearDASARR();
+      dasTimerRef.current = window.setTimeout(() => {
+        action();
+        arrTimerRef.current = window.setInterval(action, ARR_INTERVAL);
+      }, DAS_DELAY);
+    },
+    [clearDASARR]
+  );
+
   // ============ Keyboard Controls ============
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      // Block native key repeat — DAS/ARR xử lý thay
+      if (e.repeat) {
+        e.preventDefault();
+        return;
+      }
+
       if (state.status === 'idle' || state.status === 'gameover') {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
@@ -254,18 +289,21 @@ function App() {
         case 'A':
           e.preventDefault();
           actions.moveLeft();
+          startDASARR(actions.moveLeft);
           break;
         case 'ArrowRight':
         case 'd':
         case 'D':
           e.preventDefault();
           actions.moveRight();
+          startDASARR(actions.moveRight);
           break;
         case 'ArrowDown':
         case 's':
         case 'S':
           e.preventDefault();
           actions.softDrop();
+          startDASARR(actions.softDrop);
           break;
         case 'ArrowUp':
         case 'w':
@@ -285,13 +323,44 @@ function App() {
           break;
       }
     },
-    [state.status, actions, startLevel]
+    [state.status, actions, startLevel, startDASARR]
+  );
+
+  const handleKeyUp = useCallback(
+    (e: KeyboardEvent) => {
+      switch (e.key) {
+        case 'ArrowLeft':
+        case 'a':
+        case 'A':
+        case 'ArrowRight':
+        case 'd':
+        case 'D':
+        case 'ArrowDown':
+        case 's':
+        case 'S':
+          clearDASARR();
+          break;
+      }
+    },
+    [clearDASARR]
   );
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+      // NOTE: đừng gọi clearDASARR() ở đây — effect này re-run mỗi
+      // lần handleKeyDown thay đổi (tức là mỗi state update) nên
+      // DAS timer sẽ bị cancel liên tục khi đang giữ phím.
+    };
+  }, [handleKeyDown, handleKeyUp]);
+
+  // Chỉ clear DAS/ARR khi unmount
+  useEffect(() => {
+    return () => clearDASARR();
+  }, [clearDASARR]);
 
 
   // ============ Level progress ============
