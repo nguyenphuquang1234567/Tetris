@@ -3,33 +3,35 @@
 // Web Audio API — không cần file âm thanh
 // ============================================
 
-// AudioContext singleton — lazy init khi user tương tác đầu tiên
 let _ctx: AudioContext | null = null;
 
-function getCtx(): AudioContext | null {
+// getCtx async: đảm bảo context đã resumed trước khi phát âm
+async function getCtx(): Promise<AudioContext | null> {
   try {
     if (!_ctx) {
       _ctx = new (window.AudioContext ||
         (window as unknown as { webkitAudioContext: typeof AudioContext })
           .webkitAudioContext)();
     }
-    if (_ctx.state === 'suspended') void _ctx.resume();
+    if (_ctx.state === 'suspended') {
+      await _ctx.resume();
+    }
     return _ctx;
   } catch {
     return null;
   }
 }
 
-// Helper: phát 1 nốt
-function tone(
+// Phát 1 nốt — async để đợi context resume
+async function tone(
   freq: number,
   dur: number,
   type: OscillatorType = 'square',
-  vol = 0.2,
+  vol = 0.3,
   endFreq?: number,
   delay = 0
 ) {
-  const c = getCtx();
+  const c = await getCtx();
   if (!c) return;
   try {
     const osc = c.createOscillator();
@@ -47,66 +49,56 @@ function tone(
     osc.start(t);
     osc.stop(t + dur + 0.01);
   } catch {
-    // ignore — audio không available
+    // ignore
   }
 }
 
 export const sounds = {
-  // ────────────────────────────────────────
-  // Điều khiển piece
-  // ────────────────────────────────────────
   move() {
-    tone(200, 0.04, 'square', 0.1);
+    void tone(220, 0.06, 'square', 0.18);
   },
 
   rotate() {
-    tone(380, 0.05, 'square', 0.12);
-    tone(500, 0.04, 'square', 0.08, undefined, 0.03);
+    void tone(440, 0.07, 'square', 0.2);
+    void tone(600, 0.05, 'square', 0.12, undefined, 0.04);
   },
 
   softDrop() {
-    tone(140, 0.035, 'square', 0.09);
+    void tone(160, 0.05, 'square', 0.15);
   },
 
   hardDrop() {
-    // Thud + bass thump
-    tone(180, 0.05, 'sawtooth', 0.3, 60);
-    tone(55, 0.18, 'sine', 0.35, undefined, 0.04);
+    void tone(200, 0.06, 'sawtooth', 0.4, 60);
+    void tone(60, 0.2, 'sine', 0.45, undefined, 0.05);
   },
 
   lock() {
-    tone(220, 0.07, 'square', 0.15, 110);
+    void tone(250, 0.09, 'square', 0.25, 120);
   },
 
-  // ────────────────────────────────────────
-  // Game events
-  // ────────────────────────────────────────
   lineClear(lines: number) {
     if (lines >= 4) {
-      // TETRIS! — 4 nốt ascending, fanfare
+      // TETRIS! — fanfare 4 nốt
       [523, 659, 784, 1047].forEach((f, i) =>
-        tone(f, 0.2, 'sine', 0.3, undefined, i * 0.07)
+        void tone(f, 0.22, 'sine', 0.35, undefined, i * 0.08)
       );
     } else {
-      // 1-3 lines: pop + shimmer
-      const baseFreqs: Record<number, number> = { 1: 440, 2: 554, 3: 659 };
-      const f = baseFreqs[lines] ?? 440;
-      tone(f, 0.12, 'sine', 0.25);
-      tone(f * 1.5, 0.09, 'sine', 0.12, undefined, 0.07);
+      const freqs: Record<number, number> = { 1: 440, 2: 554, 3: 659 };
+      const f = freqs[lines] ?? 440;
+      void tone(f, 0.14, 'sine', 0.3);
+      void tone(f * 1.5, 0.1, 'sine', 0.18, undefined, 0.08);
     }
   },
 
   levelUp() {
-    // Ascending arpeggio
     [523, 659, 784, 1047].forEach((f, i) =>
-      tone(f, 0.13, 'sine', 0.22, undefined, i * 0.08)
+      void tone(f, 0.15, 'sine', 0.28, undefined, i * 0.09)
     );
   },
 
   gameOver() {
-    // Descending dramatic
     [380, 280, 190, 95].forEach((f, i) =>
-      tone(f, 0.22, 'sawtooth', 0.28, undefined, i * 0.16)
+      void tone(f, 0.25, 'sawtooth', 0.32, undefined, i * 0.18)
     );
   },
 };
