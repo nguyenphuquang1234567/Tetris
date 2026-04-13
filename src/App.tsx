@@ -11,6 +11,7 @@ import {
   LINES_PER_LEVEL,
 } from './constants';
 import { useTetris } from './useTetris';
+import { sounds } from './useSound';
 
 // DAS / ARR timings (ms) — chuẩn Tetris
 const DAS_DELAY = 120;   // delay trước khi auto-repeat bắt đầu
@@ -72,6 +73,7 @@ function App() {
   >([]);
   const dasTimerRef = useRef<number | null>(null);
   const arrTimerRef = useRef<number | null>(null);
+  const prevLevelRef = useRef(1);
   const [highScore, setHighScore] = useState(() => {
     try {
       return parseInt(localStorage.getItem('nexus-tetris-highscore') || '0', 10);
@@ -204,6 +206,7 @@ function App() {
   // ============ Line Clear Particles ============
   useEffect(() => {
     if (state.lineClearEvent && state.lineClearEvent.rows.length > 0) {
+      sounds.lineClear(state.lineClearEvent.rows.length);
       // Shake board
       if (boardRef.current) {
         boardRef.current.classList.remove('board-shake');
@@ -234,6 +237,21 @@ function App() {
       return () => clearTimeout(timer);
     }
   }, [state.lineClearEvent]);
+
+  // ============ Level Up Sound ============
+  useEffect(() => {
+    if (state.level > prevLevelRef.current) {
+      sounds.levelUp();
+    }
+    prevLevelRef.current = state.level;
+  }, [state.level]);
+
+  // ============ Game Over Sound ============
+  useEffect(() => {
+    if (state.status === 'gameover') {
+      sounds.gameOver();
+    }
+  }, [state.status]);
 
   // ============ DAS / ARR ============
   const clearDASARR = useCallback(() => {
@@ -289,6 +307,7 @@ function App() {
         case 'A':
           e.preventDefault();
           actions.moveLeft();
+          sounds.move();
           startDASARR(actions.moveLeft);
           break;
         case 'ArrowRight':
@@ -296,6 +315,7 @@ function App() {
         case 'D':
           e.preventDefault();
           actions.moveRight();
+          sounds.move();
           startDASARR(actions.moveRight);
           break;
         case 'ArrowDown':
@@ -303,6 +323,7 @@ function App() {
         case 'S':
           e.preventDefault();
           actions.softDrop();
+          sounds.softDrop();
           startDASARR(actions.softDrop);
           break;
         case 'ArrowUp':
@@ -310,10 +331,12 @@ function App() {
         case 'W':
           e.preventDefault();
           actions.rotate();
+          sounds.rotate();
           break;
         case ' ':
           e.preventDefault();
           actions.hardDrop();
+          sounds.hardDrop();
           break;
         case 'c':
         case 'C':
