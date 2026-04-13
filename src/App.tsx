@@ -351,9 +351,16 @@ function App() {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
-      clearDASARR();
+      // NOTE: đừng gọi clearDASARR() ở đây — effect này re-run mỗi
+      // lần handleKeyDown thay đổi (tức là mỗi state update) nên
+      // DAS timer sẽ bị cancel liên tục khi đang giữ phím.
     };
-  }, [handleKeyDown, handleKeyUp, clearDASARR]);
+  }, [handleKeyDown, handleKeyUp]);
+
+  // Chỉ clear DAS/ARR khi unmount
+  useEffect(() => {
+    return () => clearDASARR();
+  }, [clearDASARR]);
 
 
   // ============ Level progress ============
